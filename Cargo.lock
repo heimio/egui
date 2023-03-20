@@ -1276,7 +1276,7 @@ dependencies = [
  "wasm-bindgen-futures",
  "web-sys",
  "wgpu",
- "winit 0.28.3",
+ "winit 0.28.0",
 ]
 
 [[package]]
