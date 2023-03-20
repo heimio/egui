@@ -213,8 +213,8 @@ impl State {
                     consumed: egui_ctx.wants_pointer_input(),
                 }
             }
-            WindowEvent::MouseWheel { delta, .. } => {
-                self.on_mouse_wheel(*delta);
+            WindowEvent::MouseWheel { delta, phase, .. } => {
+                self.on_mouse_wheel(*delta, *phase);
                 EventResponse {
                     repaint: true,
                     consumed: egui_ctx.wants_pointer_input(),
@@ -548,7 +548,7 @@ impl State {
         }
     }
 
-    fn on_mouse_wheel(&mut self, delta: winit::event::MouseScrollDelta) {
+    fn on_mouse_wheel(&mut self, delta: winit::event::MouseScrollDelta, phase: winit::event::TouchPhase) {
         let delta = match delta {
             winit::event::MouseScrollDelta::LineDelta(x, y) => {
                 let points_per_scroll_line = 50.0; // Scroll speed decided by consensus: https://github.com/emilk/egui/issues/461
@@ -557,6 +557,13 @@ impl State {
             winit::event::MouseScrollDelta::PixelDelta(delta) => {
                 egui::vec2(delta.x as f32, delta.y as f32) / self.pixels_per_point()
             }
+        };
+
+        let phase = match phase {
+            winit::event::TouchPhase::Started => egui::TouchPhase::Start,
+            winit::event::TouchPhase::Moved => egui::TouchPhase::Move,
+            winit::event::TouchPhase::Ended => egui::TouchPhase::End,
+            winit::event::TouchPhase::Cancelled => egui::TouchPhase::Cancel,
         };
 
         if self.egui_input.modifiers.ctrl || self.egui_input.modifiers.command {
@@ -568,9 +575,15 @@ impl State {
             // Note: one Mac we already get horizontal scroll events when shift is down.
             self.egui_input
                 .events
-                .push(egui::Event::Scroll(egui::vec2(delta.x + delta.y, 0.0)));
+                .push(egui::Event::Scroll {
+                    delta: egui::vec2(delta.x + delta.y, 0.0),
+                    phase
+                });
         } else {
-            self.egui_input.events.push(egui::Event::Scroll(delta));
+            self.egui_input.events.push(egui::Event::Scroll {
+                delta,
+                phase
+            });
         }
     }
 
