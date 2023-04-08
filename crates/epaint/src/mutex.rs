@@ -27,6 +27,18 @@ mod mutex_impl {
     }
 }
 
+#[inline(always)]
+pub fn mutex_ptr() -> *const c_void
+{
+    &mutex_impl::HELD_LOCKS_TLS as *const LocalKey<RefCell<mutex_impl::HeldLocks>> as *const c_void
+}
+
+#[inline(always)]
+pub fn set_mutex_ptr(ptr: *const c_void)
+{
+    unsafe { mutex_impl::HELD_LOCKS_TLS_POINTER = &*(ptr as *const LocalKey<RefCell<mutex_impl::HeldLocks>>) };
+}
+
 #[cfg(not(target_arch = "wasm32"))]
 #[cfg(debug_assertions)]
 mod mutex_impl {
@@ -44,7 +56,7 @@ mod mutex_impl {
     pub struct MutexGuard<'a, T>(parking_lot::MutexGuard<'a, T>, *const ());
 
     #[derive(Default)]
-    struct HeldLocks(Vec<*const ()>);
+    pub(crate) struct HeldLocks(Vec<*const ()>);
 
     impl HeldLocks {
         #[inline(always)]
@@ -64,22 +76,10 @@ mod mutex_impl {
     }
 
     thread_local! {
-        static HELD_LOCKS_TLS: std::cell::RefCell<HeldLocks> = Default::default();
+        pub(crate) static HELD_LOCKS_TLS: std::cell::RefCell<HeldLocks> = Default::default();
     }
 
-    static mut HELD_LOCKS_TLS_POINTER : &LocalKey<RefCell<HeldLocks>> = &HELD_LOCKS_TLS;
-
-    #[inline(always)]
-    pub fn mutex_ptr() -> *const c_void
-    {
-        &HELD_LOCKS_TLS as *const LocalKey<RefCell<HeldLocks>> as *const c_void
-    }
-
-    #[inline(always)]
-    pub fn set_context_ptr(ptr: *const c_void)
-    {
-        unsafe { HELD_LOCKS_TLS_POINTER = &*(ptr as *const LocalKey<RefCell<HeldLocks>>) };
-    }
+    pub(crate) static mut HELD_LOCKS_TLS_POINTER : &LocalKey<RefCell<HeldLocks>> = &HELD_LOCKS_TLS;
 
     impl<T> Mutex<T> {
         #[inline(always)]
@@ -429,6 +429,9 @@ mod rw_lock_impl {
 
 // ----------------------------------------------------------------------------
 
+use std::cell::RefCell;
+use std::ffi::c_void;
+use std::thread::LocalKey;
 pub use mutex_impl::{Mutex, MutexGuard};
 pub use rw_lock_impl::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
