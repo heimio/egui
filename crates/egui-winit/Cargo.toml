@@ -43,7 +43,7 @@ serde = ["egui/serde", "dep:serde"]
 wayland = ["winit/wayland"]
 
 [dependencies]
-egui = { version = "0.21.2", path = "../egui", default-features = false, features = [
+egui = { version = "0.21.3", path = "../egui", default-features = false, features = [
   "tracing",
 ] }
 instant = { version = "0.1", features = [

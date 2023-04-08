@@ -701,10 +701,10 @@ mod glow_integration {
             {
                 let event_loop_proxy = self.repaint_proxy.clone();
                 integration.egui_ctx.set_request_repaint_callback(move || {
-                    event_loop_proxy
-                        .lock()
-                        .send_event(UserEvent::RequestRepaint)
-                        .ok();
+                    // event_loop_proxy
+                    //    .lock()
+                    //    .send_event(UserEvent::RequestRepaint)
+                    //    .ok();
                 });
             }
 

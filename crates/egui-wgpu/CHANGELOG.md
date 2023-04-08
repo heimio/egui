@@ -5,7 +5,7 @@ All notable changes to the `egui-wgpu` integration will be noted in this file.
 ## Unreleased
 
 
-## 0.21.2 - 2023-02-08
+## 0.21.3 - 2023-02-08
 * Update to `wgpu` 0.15 ([#2629](https://github.com/emilk/egui/pull/2629))
 * Return `Err` instead of panic if we can't find a device ([#2428](https://github.com/emilk/egui/pull/2428)).
 * `winit::Painter::set_window` is now `async` ([#2434](https://github.com/emilk/egui/pull/2434)).

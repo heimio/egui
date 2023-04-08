@@ -985,7 +985,7 @@ function getImports() {
         const ret = result;
         return ret;
     };
-    imports.wbg.__wbg_width_a40e21a22129b197 = function(arg0) {
+    imports.wbg.__wbg_width_a40.21.32129b197 = function(arg0) {
         const ret = getObject(arg0).width;
         return ret;
     };
