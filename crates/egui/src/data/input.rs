@@ -238,10 +238,7 @@ pub enum Event {
     /// as when swiping down on a touch-screen or track-pad with natural scrolling.
     ///
     /// Shift-scroll should result in horizontal scrolling (it is up to the integrations to do this).
-    Scroll {
-        delta: Vec2,
-        phase: TouchPhase
-    },
+    Scroll(Vec2),
 
     /// Zoom scale factor this frame (e.g. from ctrl-scroll or pinch gesture).
     /// * `zoom = 1`: no change.

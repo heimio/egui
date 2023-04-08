@@ -179,7 +179,7 @@ impl InputState {
                         keys_down.remove(key);
                     }
                 }
-                Event::Scroll { delta, .. } => {
+                Event::Scroll(delta) => {
                     scroll_delta += *delta;
                 }
                 Event::Zoom(factor) => {

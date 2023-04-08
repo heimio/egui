@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use egui::{Key, TouchPhase};
+use egui::Key;
 
 use super::*;
 
@@ -434,10 +434,7 @@ pub fn install_canvas_events(runner_container: &mut AppRunnerContainer) -> Resul
                     .input
                     .raw
                     .events
-                    .push(egui::Event::Scroll {
-                        delta,
-                        phase: TouchPhase::Move
-                    });
+                    .push(egui::Event::Scroll(delta));
             }
 
             runner_lock.needs_repaint.repaint_asap();
