@@ -5,7 +5,7 @@ All notable changes to the `egui_extras` integration will be noted in this file.
 ## Unreleased
 
 
-## 0.21.0 - 2023-02-08
+## 0.21.2 - 2023-02-08
 * Update to egui 0.21
 
 
