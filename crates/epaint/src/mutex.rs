@@ -30,6 +30,10 @@ mod mutex_impl {
 #[cfg(not(target_arch = "wasm32"))]
 #[cfg(debug_assertions)]
 mod mutex_impl {
+    use std::cell::RefCell;
+    use std::ffi::c_void;
+    use std::thread::LocalKey;
+
     /// Provides interior mutability.
     ///
     /// Uses `parking_lot` crate on native targets, and `atomic_refcell` on `wasm32` targets.
@@ -63,6 +67,20 @@ mod mutex_impl {
         static HELD_LOCKS_TLS: std::cell::RefCell<HeldLocks> = Default::default();
     }
 
+    static mut HELD_LOCKS_TLS_POINTER : &LocalKey<RefCell<HeldLocks>> = &HELD_LOCKS_TLS;
+
+    #[inline(always)]
+    pub fn mutex_ptr() -> *const c_void
+    {
+        &HELD_LOCKS_TLS as *const LocalKey<RefCell<HeldLocks>> as *const c_void
+    }
+
+    #[inline(always)]
+    pub fn set_context_ptr(ptr: *const c_void)
+    {
+        unsafe { HELD_LOCKS_TLS_POINTER = &*(ptr as *const LocalKey<RefCell<HeldLocks>>) };
+    }
+
     impl<T> Mutex<T> {
         #[inline(always)]
         pub fn new(val: T) -> Self {
@@ -76,9 +94,11 @@ mod mutex_impl {
             let ptr = (&self.0 as *const parking_lot::Mutex<_>).cast::<()>();
 
             // Store it in thread local storage while we have a lock guard taken out
-            HELD_LOCKS_TLS.with(|held_locks| {
-                held_locks.borrow_mut().insert(ptr);
-            });
+            unsafe {
+                HELD_LOCKS_TLS_POINTER.with(|held_locks| {
+                    held_locks.borrow_mut().insert(ptr);
+                });
+            }
 
             MutexGuard(self.0.lock(), ptr)
         }
@@ -87,9 +107,12 @@ mod mutex_impl {
     impl<T> Drop for MutexGuard<'_, T> {
         fn drop(&mut self) {
             let ptr = self.1;
-            HELD_LOCKS_TLS.with(|held_locks| {
-                held_locks.borrow_mut().remove(ptr);
-            });
+
+            unsafe {
+                HELD_LOCKS_TLS_POINTER.with(|held_locks| {
+                    held_locks.borrow_mut().remove(ptr);
+                });
+            }
         }
     }
 
